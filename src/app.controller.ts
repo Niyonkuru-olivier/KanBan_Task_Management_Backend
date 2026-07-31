@@ -1,12 +1,19 @@
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AppService, SystemStatus } from './app.service';
 
+@ApiTags('System')
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @ApiOperation({ summary: 'Get API System Status & Information' })
+  @ApiResponse({
+    status: 200,
+    description: 'System health status and endpoint directory',
+  })
+  getSystemStatus(): SystemStatus {
+    return this.appService.getSystemStatus();
   }
 }

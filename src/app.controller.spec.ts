@@ -15,8 +15,11 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return system status object', () => {
+      const result = appController.getSystemStatus();
+      expect(result).toHaveProperty('name', 'Kanban Task Management API');
+      expect(result).toHaveProperty('status', 'online');
+      expect(result).toHaveProperty('documentation', '/api');
     });
   });
 });
