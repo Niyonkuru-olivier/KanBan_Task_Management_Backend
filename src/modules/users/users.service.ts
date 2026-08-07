@@ -69,4 +69,42 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
   }
+  async create(registerDto: any): Promise<Omit<User, 'passwordHash'>> {
+    const { name, email, password, role } = registerDto;
+    
+    const existing = await this.userRepository.findOne({
+      where: { email: String(email).trim().toLowerCase() },
+    });
+    if (existing) {
+      throw new ConflictException('Email address is already in use');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const newUser = this.userRepository.create({
+      name,
+      email: String(email).trim().toLowerCase(),
+      passwordHash,
+      role: role || 'member',
+    });
+
+    const savedUser = await this.userRepository.save(newUser);
+    const { passwordHash: _, ...result } = savedUser;
+    return result;
+  }
+
+  async updateRole(id: number, role: string): Promise<Omit<User, 'passwordHash'>> {
+    if (role !== 'member' && role !== 'admin') {
+      throw new ConflictException('Invalid role specified');
+    }
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    user.role = role;
+    const updatedUser = await this.userRepository.save(user);
+    const { passwordHash, ...result } = updatedUser;
+    return result;
+  }
 }
