@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Board } from './board.entity';
+import { WorkspaceMember } from './workspace-member.entity';
 
 @Entity('workspaces')
 export class Workspace {
@@ -27,6 +28,9 @@ export class Workspace {
   @ManyToOne(() => User, (user) => user.workspaces, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'owner_id' })
   owner: User;
+
+  @OneToMany(() => WorkspaceMember, (member) => member.workspace)
+  members: WorkspaceMember[];
 
   @OneToMany(() => Board, (board) => board.workspace)
   boards: Board[];

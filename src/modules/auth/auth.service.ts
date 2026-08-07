@@ -1,7 +1,9 @@
+// ...existing code...
 import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,9 +21,48 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  // ...existing code...
   async register(registerDto: RegisterDto) {
+    // required fields
+    if (!registerDto?.name || !registerDto?.email || !registerDto?.password) {
+      throw new BadRequestException('Name, email and password are required');
+    }
+
+    const name = String(registerDto.name).trim();
+    const email = String(registerDto.email).trim().toLowerCase();
+    const passwordRaw = registerDto.password;
+
+    if (typeof passwordRaw !== 'string') {
+      throw new BadRequestException('Password must be a string');
+    }
+
+    const password = passwordRaw.trim();
+
+    // explicit password rules (clear, strict checks)
+    if (password.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters long');
+    }
+    if (!/[A-Z]/.test(password)) {
+      throw new BadRequestException('Password must include at least one uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+      throw new BadRequestException('Password must include at least one lowercase letter');
+    }
+    if (!/\d/.test(password)) {
+      throw new BadRequestException('Password must include at least one number');
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      throw new BadRequestException('Password must include at least one special character (e.g. @, !, #)');
+    }
+
+    // email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new BadRequestException('Invalid email format');
+    }
+
     const existingUser = await this.userRepository.findOne({
-      where: { email: registerDto.email.toLowerCase() },
+      where: { email },
     });
 
     if (existingUser) {
@@ -29,11 +70,11 @@ export class AuthService {
     }
 
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(registerDto.password, salt);
+    const passwordHash = await bcrypt.hash(password, salt);
 
     const newUser = this.userRepository.create({
-      name: registerDto.name,
-      email: registerDto.email.toLowerCase(),
+      name,
+      email,
       passwordHash,
       role: registerDto.role || 'member',
     });
@@ -49,32 +90,40 @@ export class AuthService {
       accessToken,
     };
   }
-
   async login(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+
     const user = await this.userRepository.findOne({
-      where: { email: loginDto.email.toLowerCase() },
+      where: { email: String(email).trim().toLowerCase() },
     });
 
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      user.passwordHash,
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const { passwordHash: _, ...result } = user;
     const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
+    const { passwordHash: _, ...result } = user;
+
     return {
+      message: 'Login successful',
       user: result,
       accessToken,
     };
+  }
+  async getProfile(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    const { passwordHash, ...result } = user;
+    return result;
   }
 }
