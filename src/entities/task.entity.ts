@@ -30,6 +30,15 @@ export class Task {
   @TypeOrmColumn({ name: 'assignee_id', nullable: true })
   assigneeId: number | null;
 
+  @TypeOrmColumn({ type: 'timestamp', name: 'due_date', nullable: true })
+  dueDate: Date | null;
+
+  @TypeOrmColumn({ type: 'varchar', length: 20, default: 'Medium' })
+  priority: string;
+
+  @TypeOrmColumn({ type: 'int', default: 0 })
+  position: number;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 

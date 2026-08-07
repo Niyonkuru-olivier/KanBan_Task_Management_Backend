@@ -10,6 +10,8 @@ import { CommentsModule } from './modules/comments/comments.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 
 @Module({
   imports: [
@@ -34,7 +36,7 @@ import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module
               ssl: { rejectUnauthorized: false },
             },
             autoLoadEntities: true,
-            synchronize: false,
+            synchronize: true,
           };
         }
 
@@ -46,7 +48,7 @@ import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module
           password: config.get<string>('DB_PASS', 'password'),
           database: config.get<string>('DB_NAME', 'kanban_db'),
           autoLoadEntities: true,
-          synchronize: false,
+          synchronize: true,
         };
       },
     }),
@@ -57,6 +59,8 @@ import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module
     TasksModule,
     WorkspacesModule,
     ActivityLogsModule,
+    AnalyticsModule,
+    IntegrationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
