@@ -24,42 +24,42 @@ export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a comment' }) // Swagger operation summary
+  @ApiOperation({ summary: 'Create a comment' })
   create(
     @Body() createCommentDto: CreateCommentDto,
-    @CurrentUser('id') userId: number,
+    @CurrentUser() user: any,
   ) {
-    return this.commentsService.create(createCommentDto, userId);
+    return this.commentsService.create(createCommentDto, user);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all comments for a task' }) // Swagger operation summary
-  findAllByTask(@Query('taskId', ParseIntPipe) taskId: number) {
-    return this.commentsService.findAllByTask(taskId);
+  @ApiOperation({ summary: 'Get all comments for a task' })
+  findAllByTask(@Query('taskId', ParseIntPipe) taskId: number, @CurrentUser() user: any) {
+    return this.commentsService.findAllByTask(taskId, user);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a single comment by ID' }) // Swagger operation summary
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.commentsService.findOne(id);
+  @ApiOperation({ summary: 'Get a single comment by ID' })
+  findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
+    return this.commentsService.findOne(id, user);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a comment by ID' }) // Swagger operation summary
+  @ApiOperation({ summary: 'Update a comment by ID' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCommentDto: UpdateCommentDto,
-    @CurrentUser('id') userId: number,
+    @CurrentUser() user: any,
   ) {
-    return this.commentsService.update(id, updateCommentDto, userId);
+    return this.commentsService.update(id, updateCommentDto, user);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a comment by ID' }) // Swagger operation summary
+  @ApiOperation({ summary: 'Delete a comment by ID' })
   remove(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser('id') userId: number,
+    @CurrentUser() user: any,
   ) {
-    return this.commentsService.remove(id, userId);
+    return this.commentsService.remove(id, user);
   }
 }

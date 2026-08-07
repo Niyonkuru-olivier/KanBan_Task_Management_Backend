@@ -9,6 +9,7 @@ import { Workspace } from './workspace.entity';
 import { Task } from './task.entity';
 import { Comment } from './comment.entity';
 import { ActivityLog } from './activity-log.entity';
+import { WorkspaceMember } from './workspace-member.entity';
 
 @Entity('users')
 export class User {
@@ -32,6 +33,9 @@ export class User {
 
   @OneToMany(() => Workspace, (workspace) => workspace.owner)
   workspaces: Workspace[];
+
+  @OneToMany(() => WorkspaceMember, (member) => member.user)
+  workspaceMemberships: WorkspaceMember[];
 
   @OneToMany(() => Task, (task) => task.assignee)
   assignedTasks: Task[];
